@@ -9,7 +9,7 @@
 
 using namespace std;
 int main() {
-    
+    //esta potente un codigo vacio os maldigo progra de disp moviles
     printf("Hello world!\n");
     
     return 0;
