@@ -8,6 +8,11 @@
 #include <semaphore.h>
 #include <chrono>
 #include <random>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <semaphore.h>
+#include <fcntl.h>
 
 #define LECTURAS_CONSECUTIVAS 1     // Lectores que han leído consecutivamente
 #define MAX_LECTURAS_CONSECUTIVAS 5 // Maximo de Lectores que han leído consecutivamente
