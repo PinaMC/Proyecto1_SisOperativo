@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 
-
+using namespace std;
 #define LECTURAS_CONSECUTIVAS 1     // Lectores que han leído consecutivamente
 #define MAX_LECTURAS_CONSECUTIVAS 5 // Maximo de Lectores que han leído consecutivamente
 #define ESCRITORES_ESPERANDO 5   // Maximum number of readings
@@ -31,7 +31,15 @@ sem_t sem_escritor;
 bool escritor_esperando = false;
 int lectores_en_sala = 0;
 
-using namespace std;
+void Lector(int id){
+    //generacion de aleatorios ovo
+    random rd;
+
+}
+
+
+
+
 int main() {
     //esta potente un codigo vacio os maldigo progra de disp moviles
     printf("Hello world!\n");
