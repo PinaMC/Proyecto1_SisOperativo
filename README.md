@@ -41,12 +41,21 @@ Ejemplo de salida esperada:
 
 
 
---------------------------RESOLUCION------------------------------
+
+--------------------------Avances--------------------------------
+|    1- Objetivo es crear lectores maximos                       |
+|    2- Tener contador de lectores ingresando                    |
+|    3- Maximo de lectores para ingresar                         |
+|    4- Maximo de lectores leyendo                               |
+|    5- Umbral del "cambio" del semaforo                         |
+--------------------------RESOLUCION-----------------------------
 
 Los lectores tienen prioridad para leer y "actuar" en el codigo, por lo tanto mientras hayan lectores queriendo leer pueden entrar de forma simultánea.
 
 Los escritores tienen que esperar que no hay ningún lector activo, el problema esta en que si hay una cantidad muy grande de lectores los escritores nunca pueden "escribir".
 
 Bajo este enfoque podemos decir que necesitamos una forma de "forzar" el turno del escritor para que pase al estado de activo y pueda escribir. Para realizarlo se necesita que después de que X cantidad de lectores lean consecutivamente el programa "pause" los pausen y active al escritor
+
+
 
 fin

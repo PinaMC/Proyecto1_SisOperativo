@@ -5,15 +5,14 @@
 #include <vector>
 #include <thread>
 #include <mutex>
-#include <semaphore.h>
+#include <semaphore.h> // Use the C++ standard library semaphore header
 #include <chrono>
 #include <random>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <semaphore.h>
 #include <fcntl.h>
-#include <bits/semaphore.h>
+
 
 
 #define LECTURAS_CONSECUTIVAS 1     // Lectores que han leído consecutivamente
