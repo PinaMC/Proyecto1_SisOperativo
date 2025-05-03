@@ -20,6 +20,9 @@
 #define MAX_ESPERA 5      // Tiempo maximo de los lectores?
 #define TIEMPO_ESCRITURA = 10 //el tiempo sera de 10 secondos para el escritor
 
+const char* lector_sem = lector_sem;
+const char* escritor_sem = escritor_sem;
+
 using namespace std;
 int main() {
     //esta potente un codigo vacio os maldigo progra de disp moviles
@@ -115,6 +118,129 @@ int main() {
     sem_unlink(lector_sem_name);
     sem_close(escritor_sem);
     sem_unlink(escritor_sem_name);
+
+    return 0;
+}
+*/
+/*
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <semaphore.h>
+#include <chrono>
+#include <random>
+
+// Definiciones
+const int MAX_LECTORES_SIMULTANEOS = 5;
+const int MAX_LECTURAS_CONSECUTIVAS = 5;
+const int NUM_LECTORES = 10;
+const int NUM_ESCRITORES = 3;
+const int TIEMPO_ESCRITURA = 2; // Tiempo de escritura reducido para pruebas
+const int TIEMPO_LECTURA_MAX = 3;
+
+// Variables compartidas
+int lecturas_consecutivas = 0;
+std::mutex mutex_control;
+sem_t sem_lector;
+sem_t sem_escritor;
+bool escritor_esperando = false;
+int lectores_en_sala = 0;
+
+// Función para simular la lectura
+void lector(int id) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
+
+    std::cout << "[Lector " << id << "] intentando acceder." << std::endl;
+
+    while (true) {
+        std::unique_lock<std::mutex> lock(mutex_control);
+        if (!escritor_esperando && lectores_en_sala < MAX_LECTORES_SIMULTANEOS && lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
+            lectores_en_sala++;
+            lecturas_consecutivas++;
+            std::cout << "[Lector " << id << "] leyendo (lectura " << lecturas_consecutivas << "/" << MAX_LECTURAS_CONSECUTIVAS << ")" << std::endl;
+            lock.unlock();
+            std::this_thread::sleep_for(std::chrono::seconds(distribucion_tiempo(gen)));
+            lock.lock();
+            lectores_en_sala--;
+            if (lectores_en_sala == 0) {
+                sem_post(&sem_escritor); // Si fui el último lector, permito a un escritor
+                lecturas_consecutivas = 0;
+            }
+            break;
+        } else {
+            std::cout << "[Lector " << id << "] esperando para leer (escritor esperando: " << escritor_esperando << ", lectores en sala: " << lectores_en_sala << ", lecturas consecutivas: " << lecturas_consecutivas << ")." << std::endl;
+            lock.unlock();
+            sem_wait(&sem_lector); // Espera a que un escritor termine y dé paso o haya espacio
+        }
+    }
+    std::cout << "[Lector " << id << "] terminó de leer." << std::endl;
+}
+
+// Función para simular la escritura
+void escritor(int id) {
+    std::cout << "[Escritor " << id << "] intentando acceder para escribir." << std::endl;
+
+    std::unique_lock<std::mutex> lock(mutex_control);
+    escritor_esperando = true;
+    std::cout << "[Escritor " << id << "] esperando turno tras " << lecturas_consecutivas << " lecturas." << std::endl;
+    lock.unlock();
+
+    sem_wait(&sem_escritor); // Espera a que los lectores terminen su bloque
+
+    lock.lock();
+    escritor_esperando = false;
+    std::cout << "[Escritor " << id << "] escribiendo..." << std::endl;
+    lock.unlock();
+
+    std::this_thread::sleep_for(std::chrono::seconds(TIEMPO_ESCRITURA));
+
+    lock.lock();
+    std::cout << "[Escritor " << id << "] terminó de escribir." << std::endl;
+    lecturas_consecutivas = 0; // Reiniciar el contador de lecturas consecutivas
+    // Dar preferencia a los lectores si no hay más escritores esperando inmediatamente
+    if (!escritor_esperando) {
+        for (int i = 0; i < MAX_LECTORES_SIMULTANEOS; ++i) {
+            sem_post(&sem_lector); // Desbloquear hasta el número máximo de lectores
+        }
+    }
+    lock.unlock();
+}
+
+int main() {
+    std::srand(std::time(nullptr));
+
+    if (sem_init(&sem_lector, 0, 0) == -1) {
+        std::cerr << "Error al inicializar el semáforo de lector." << std::endl;
+        return 1;
+    }
+    if (sem_init(&sem_escritor, 0, 0) == -1) {
+        std::cerr << "Error al inicializar el semáforo de escritor." << std::endl;
+        return 1;
+    }
+
+    std::vector<std::thread> lectores_hilos(NUM_LECTORES);
+    for (int i = 0; i < NUM_LECTORES; ++i) {
+        lectores_hilos[i] = std::thread(lector, i + 1);
+    }
+
+    std::vector<std::thread> escritores_hilos(NUM_ESCRITORES);
+    for (int i = 0; i < NUM_ESCRITORES; ++i) {
+        escritores_hilos[i] = std::thread(escritor, i + 1);
+    }
+
+    for (auto& hilo : lectores_hilos) {
+        hilo.join();
+    }
+
+    for (auto& hilo : escritores_hilos) {
+        hilo.join();
+    }
+
+    sem_destroy(&sem_lector);
+    sem_destroy(&sem_escritor);
 
     return 0;
 }
