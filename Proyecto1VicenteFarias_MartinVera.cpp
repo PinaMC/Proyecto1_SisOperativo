@@ -13,6 +13,8 @@
 #include <sys/wait.h>
 #include <semaphore.h>
 #include <fcntl.h>
+#include <bits/semaphore.h>
+
 
 #define LECTURAS_CONSECUTIVAS 1     // Lectores que han leído consecutivamente
 #define MAX_LECTURAS_CONSECUTIVAS 5 // Maximo de Lectores que han leído consecutivamente
@@ -22,6 +24,13 @@
 
 const char* lector_sem = lector_sem;
 const char* escritor_sem = escritor_sem;
+// Variables compartidas
+int lecturas_consecutivas = 0;
+mutex mutex_control;
+sem_t sem_lector;
+sem_t sem_escritor;
+bool escritor_esperando = false;
+int lectores_en_sala = 0;
 
 using namespace std;
 int main() {
