@@ -33,7 +33,32 @@ int lectores_en_sala = 0;
 
 void Lector(int id){
     //generacion de aleatorios ovo
-    random rd;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
+
+    std::cout << "[Lector " << id << "] intentando acceder." << std::endl;
+    //ahora vendra un while en dodnde estara el bucle de los lectores 0w0nt
+    while(true){
+        std::unique_lock<std::mutex> lock(mutex_control);
+        if(!escritor_esperando &&  lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS){
+            //AQUI VA LA LOGICA OWO
+            lectores_en_sala++;
+            lecturas_consecutivas++;
+            cout<< "[Lector " << id << "] leyendo (lectura " << lecturas_consecutivas << "/" << MAX_LECTURAS_CONSECUTIVAS << ")" <<endl;
+            lock.unlock();
+            std::this_thread::sleep_for(chrono::seconds(distribucion_tiempo(gen)));
+            lock.lock();
+            lectores_en_sala--;
+            //en el if que viene aca es cuando los lectores en sala sean 0 deberia de tocarle a un escritor
+            if(lectores_en_sala == 0){
+                sem_post(&sem_escritor);
+                lecturas_consecutivas = 0;
+            }
+
+        }
+    }
+
 
 }
 
