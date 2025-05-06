@@ -62,6 +62,44 @@ void Lector(int id){
 
 }
 
+//---------------------escritores--------------------------------------------
+void escritor(int id) {
+    std::cout << "[Escritor " << id << "] intentando acceder para escribir." << std::endl;
+
+    std::unique_lock<std::mutex> lock(mutex_control);
+    escritor_esperando = true;
+    std::cout << "[Escritor " << id << "] esperando turno tras " << lecturas_consecutivas << " lecturas." << std::endl;
+    lock.unlock();
+
+    sem_wait(&sem_escritor); // Espera a que los lectores terminen su bloque
+
+    lock.lock();
+    escritor_esperando = false;
+    std::cout << "[Escritor " << id << "] escribiendo..." << std::endl;
+    lock.unlock();
+
+    std::this_thread::sleep_for(std::chrono::seconds(TIEMPO_ESCRITURA));
+
+    lock.lock();
+    std::cout << "[Escritor " << id << "] terminó de escribir." << std::endl;
+    lecturas_consecutivas = 0; // Reiniciar el contador de lecturas consecutivas
+    // Dar preferencia a los lectores si no hay más escritores esperando inmediatamente
+    if (!escritor_esperando) {
+        for (int i = 0; i < MAX_LECTORES_SIMULTANEOS; ++i) {
+            sem_post(&sem_lector); // Desbloquear hasta el número máximo de lectores
+        }
+    }
+    lock.unlock();
+}
+
+
+
+
+
+
+
+
+
 
 
 
