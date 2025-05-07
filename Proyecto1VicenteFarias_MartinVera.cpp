@@ -25,8 +25,8 @@ using namespace std;
 #define NUM_LECTORES 5 // Numero de lectores
 #define NUM_ESCRITORES 2 // Numero de escritores
 
-const char* lector_sem = lector_sem;
-const char* escritor_sem = escritor_sem;
+//const char* lector_sem = lector_sem;
+//const char* escritor_sem = escritor_sem;
 // Variables compartidas
 int lecturas_consecutivas = 0;
 mutex mutex_control;
