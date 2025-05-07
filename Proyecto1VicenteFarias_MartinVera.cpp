@@ -1,6 +1,7 @@
 #include<stdio.h>
-#include<pthread.h>
-#include<unistd.h>
+#include <thread>
+#include <mutex>
+#include <unistd.h>
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -15,11 +16,14 @@
 
 
 using namespace std;
-#define LECTURAS_CONSECUTIVAS 1     // Lectores que han leído consecutivamente
+#define LECTURAS_CONSECUTIVAS 5     // Lectores que han leído consecutivamente
 #define MAX_LECTURAS_CONSECUTIVAS 5 // Maximo de Lectores que han leído consecutivamente
 #define ESCRITORES_ESPERANDO 5   // Maximum number of readings
 #define MAX_ESPERA 5      // Tiempo maximo de los lectores?
-#define TIEMPO_ESCRITURA = 10 //el tiempo sera de 10 secondos para el escritor
+#define TIEMPO_ESCRITURA 10 //el tiempo sera de 10 segundos para el escritor
+#define TIEMPO_LECTURA_MAX 5 // Tiempo maximo de lectura para los lectores
+#define NUM_LECTORES 5 // Numero de lectores
+#define NUM_ESCRITORES 2 // Numero de escritores
 
 const char* lector_sem = lector_sem;
 const char* escritor_sem = escritor_sem;
@@ -85,7 +89,7 @@ void escritor(int id) {
     lecturas_consecutivas = 0; // Reiniciar el contador de lecturas consecutivas
     // Dar preferencia a los lectores si no hay más escritores esperando inmediatamente
     if (!escritor_esperando) {
-        for (int i = 0; i < MAX_LECTORES_SIMULTANEOS; ++i) {
+        for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
             sem_post(&sem_lector); // Desbloquear hasta el número máximo de lectores
         }
     }
@@ -104,9 +108,38 @@ void escritor(int id) {
 
 
 int main() {
-    //esta potente un codigo vacio os maldigo progra de disp moviles
-    printf("Hello world!\n");
-    
+    std::srand(std::time(nullptr));
+
+    if (sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1) {
+        std::cerr << "Error al inicializar el semáforo de lector." << std::endl;
+        return 1;
+    }
+    if (sem_init(&sem_escritor, 0, 0) == -1) {
+        std::cerr << "Error al inicializar el semáforo de escritor." << std::endl;
+        return 1;
+    }
+
+    std::vector<std::thread> lectores_hilos(NUM_LECTORES);
+    for (int i = 0; i < NUM_LECTORES; ++i) {
+        lectores_hilos[i] = std::thread(Lector, i + 1);
+    }
+
+    std::vector<std::thread> escritores_hilos(NUM_ESCRITORES);
+    for (int i = 0; i < NUM_ESCRITORES; ++i) {
+        escritores_hilos[i] = std::thread(escritor, i + 1);
+    }
+
+    for (auto& hilo : lectores_hilos) {
+        hilo.join();
+    }
+
+    for (auto& hilo : escritores_hilos) {
+        hilo.join();
+    }
+
+    sem_destroy(&sem_lector);
+    sem_destroy(&sem_escritor);
+
     return 0;
 }
 /*
