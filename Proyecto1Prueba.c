@@ -2,7 +2,23 @@
 #include <stdio.h>
 #include <unistd.h>
 
+/** Funciones de hilos
+ * pthread_create: crea un nuevo hilo.
+ * pthread_join: espera a que un hilo termine su ejecución.
+ * pthread_mutex_lock: bloquea un mutex.
+ * pthread_mutex_unlock: desbloquea un mutex.
+ * pthread_cond_wait: espera a que una condición se cumpla.
+ * pthread_cond_signal: despierta un hilo que está esperando una condición.
+ * pthread_cond_broadcast: despierta a todos los hilos que están esperando una condición.
+ * pthread_mutex_init: inicializa un mutex.
+ * pthread_mutex_destroy: destruye un mutex.
+ * pthread_cond_init: inicializa una variable de condición.
+ * pthread_cond_destroy: destruye una variable de condición.
+ * pthread_exit: termina la ejecución de un hilo.
+ * pthread_self: obtiene el ID del hilo que está ejecutando la función.
 
+ * 
+*/
 //Falta agregar semaforos y mutexes
 
 #define MAX_LECTURAS_CONSECUTIVAS 5
