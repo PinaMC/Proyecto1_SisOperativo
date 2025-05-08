@@ -98,30 +98,37 @@ int main() {
     // creacion de los hilos
     vector<thread> lectores;
     vector<thread> escritores;
-
     // Inicializar semáforos
     //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
     //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
     //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
-    if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS)== -1){
-        //mensaje de falla si no se inicializa
-        cerr<<"Error al Inicializar el semaforo del lector"<< endl;
+  
+    if (sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
+        cerr << "Error al Inicializar el semaforo del lector" << endl;
         return 1;
     }
-    if(sem_init(&sem_escritor, 0, 0) >= -1){
-        cerr<<"Error al iniciar semaforo de escritores"<< endl;
+    if(sem_init(&sem_escritor, 0, 0) == -1){
+        cerr << "Error al iniciar semaforo de escritores" << endl;
         return 1;
     }
     //----------------------------------------------------------
     //                   creacion hilos
     //----------------------------------------------------------
-   
-    for (int i = 0; i < NUM_LECTORES; ++i) {
-        lectores.emplace_back(Lector, i + 1);
-    }
 
-    for (int i = 0; i < NUM_ESCRITORES; ++i) {
-        escritores.emplace_back(Escritor, i + 1);
+    int i = 0;
+    while(i < NUM_LECTORES){ 
+        lectores.emplace_back(Lector, i + 1);
+        ++i;
+    }
+    int ii= 0;
+   /* while(i< NUM_ESCRITORES){
+        escritores.emplace_back(Escritor, ii +1);
+        ++ii;
+    }*/
+    int count = NUM_ESCRITORES;
+    while(count > 0){
+        escritores.emplace_back(Escritor, count);
+        count --;
     }
 
     // Esperar a que terminen
