@@ -89,9 +89,11 @@ void Escritor(int id) {
     
     // Notificar a los lectores
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
+       // cout<<"AAA"<< endl;
         sem_post(&sem_lector);
     }
     lock.unlock();
+    //cout<<"ID"<< endl;
 }
 
 int main() {
@@ -137,6 +139,8 @@ int main() {
     }
     for(auto& t : escritores){
         t.join();
+        cout<<"eliminao"<<endl;
+
     }
 
     // Liberar recursos
