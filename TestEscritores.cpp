@@ -103,7 +103,7 @@ int main() {
     //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
     //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
   
-    if (sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
+    if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
         cerr << "Error al Inicializar el semaforo del lector" << endl;
         return 1;
     }
@@ -132,10 +132,10 @@ int main() {
     }
 
     // Esperar a que terminen
-    for (auto& t : lectores) {
+    for(auto& t : lectores){
         t.join();
     }
-    for (auto& t : escritores) {
+    for(auto& t : escritores){
         t.join();
     }
 
