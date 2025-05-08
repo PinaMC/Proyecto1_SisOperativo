@@ -29,12 +29,11 @@ void Lector(int id) {
     mt19937 gen(rd());
     uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
 
-    while (true) {
+    while (true) { // aqui va toda la sintaxis 0w0
         cout << "[Lector " << id << "] intentando acceder." << endl;
 
         unique_lock<mutex> lock(mutex_control);
-        if (!escritor_esperando && lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS && 
-            lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
+        if(!escritor_esperando && lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS && lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
             
             lectores_en_sala++;
             lecturas_consecutivas++;
@@ -47,7 +46,7 @@ void Lector(int id) {
 
             lock.lock();
             lectores_en_sala--;
-            if (lectores_en_sala == 0) {
+            if(lectores_en_sala == 0){
                 sem_post(&sem_escritor);
                 lecturas_consecutivas = 0;
             }
@@ -81,7 +80,7 @@ void Escritor(int id) {
     cout << "[Escritor " << id << "] escribiendo..." << endl;
     lock.unlock();
 
-    // Simular tiempo de escritura
+    // Simulacion del tiempo de escritura
     this_thread::sleep_for(chrono::seconds(TIEMPO_ESCRITURA));
 
     lock.lock();
@@ -96,20 +95,27 @@ void Escritor(int id) {
 }
 
 int main() {
-    // Inicializar semáforos
-    if (sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1) {
-        cerr << "Error al inicializar sem_lector" << endl;
-        return 1;
-    }
-    if (sem_init(&sem_escritor, 0, 0) == -1) {
-        cerr << "Error al inicializar sem_escritor" << endl;
-        return 1;
-    }
-
-    // Crear hilos
+    // creacion de los hilos
     vector<thread> lectores;
     vector<thread> escritores;
 
+    // Inicializar semáforos
+    //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
+    //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
+    //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
+    if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS)== -1){
+        //mensaje de falla si no se inicializa
+        cerr<<"Error al Inicializar el semaforo del lector"<< endl;
+        return 1;
+    }
+    if(sem_init(&sem_escritor, 0, 0) >= -1){
+        cerr<<"Error al iniciar semaforo de escritores"<< endl;
+        return 1;
+    }
+    //----------------------------------------------------------
+    //                   creacion hilos
+    //----------------------------------------------------------
+   
     for (int i = 0; i < NUM_LECTORES; ++i) {
         lectores.emplace_back(Lector, i + 1);
     }
