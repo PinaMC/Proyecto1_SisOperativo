@@ -12,7 +12,7 @@ using namespace std;
 // Constantes de configuración
 #define MAX_LECTURAS_CONSECUTIVAS 5
 #define TIEMPO_ESCRITURA 2
-#define TIEMPO_LECTURA_MAX 5
+#define TIEMPO_LECTURA_MAX 3
 #define NUM_LECTORES 5
 #define NUM_ESCRITORES 2
 
@@ -98,12 +98,14 @@ void Escritor(int id) {
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
         sem_post(&sem_lector);
     }
-   // sem_post(&sem_escritor);
+    sem_post(&sem_escritor);
     lock.unlock();
-    
 }
 
 int main() {
+    // creacion de los hilos
+    vector<thread> lectores;
+    vector<thread> escritores;
     // Inicializar semáforos
     //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
     //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
@@ -121,7 +123,6 @@ int main() {
     //              creacion lectores y escritores
     //----------------------------------------------------------
 
-    vector<thread> lectores;
     int i = 0;
     while(i < NUM_LECTORES){ 
         lectores.emplace_back(Lector, i + 1);
@@ -132,20 +133,10 @@ int main() {
         escritores.emplace_back(Escritor, ii +1);
         ++ii;
     }*/
-    vector<thread> escritores;
     int count = NUM_ESCRITORES;
     while(count > 0){
         escritores.emplace_back(Escritor, count);
         count --;
-    }
-    
-
-
-
-    // Liberar todos los semáforos para despertar hilos bloqueados
-    for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
-        sem_post(&sem_lector);
-        sem_post(&sem_escritor);
     }
 
     // Esperar a que terminen
