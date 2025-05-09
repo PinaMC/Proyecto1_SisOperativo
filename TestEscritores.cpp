@@ -114,7 +114,7 @@ int main() {
         print_safe("Error al Inicializar el semaforo del lector");
         return 1;
     }
-    if(sem_init(&sem_escritor, 0, 0) == -1){
+    if(sem_init(&sem_escritor, 0, 1) == -1){
         print_safe("Error al iniciar semaforo de escritores");
         return 1;
     }
@@ -275,5 +275,5 @@ int main() {
 
     printf("Todos los hilos han terminado.\n");
     return 0;
-}/
+}
 */
