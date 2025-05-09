@@ -98,7 +98,7 @@ void Escritor(int id) {
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
         sem_post(&sem_lector);
     }
-    //sem_post(&sem_escritor);
+    sem_post(&sem_escritor);
     lock.unlock();
 }
 
