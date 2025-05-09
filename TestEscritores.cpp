@@ -138,9 +138,6 @@ int main() {
         escritores.emplace_back(Escritor, count);
         count --;
     }
-    
-
-
 
     // Liberar todos los semáforos para despertar hilos bloqueados
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
