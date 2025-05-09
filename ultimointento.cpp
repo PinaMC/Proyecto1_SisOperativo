@@ -37,11 +37,12 @@ void Lector(int id) {
     uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
 
     while (true) { // aqui va toda la sintaxis 0w0
+    print_safe("[Lector " + to_string(id) + "] intentando acceder.");
         print_safe("[Lector " + to_string(id) + "] intentando acceder.");
 
         unique_lock<mutex> lock(mutex_control);
         if(!escritor_esperando && lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS && lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
-            
+
             lectores_en_sala++;
             lecturas_consecutivas++;
             print_safe("[Lector " + to_string(id) + "] leyendo (lectura " + to_string(lecturas_consecutivas) + 
@@ -93,63 +94,63 @@ void Escritor(int id) {
     lock.lock();
     print_safe("[Escritor " + to_string(id) + "] terminó de escribir.");
     lecturas_consecutivas = 0;
-    
+
     // Notificar a los lectores
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
         sem_post(&sem_lector);
     }
-    sem_post(&sem_escritor);
+    //sem_post(&sem_escritor);
     lock.unlock();
 }
 
 int main() {
-    // creacion de los hilos
-    vector<thread> lectores;
-    vector<thread> escritores;
-    // Inicializar semáforos
-    //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
-    //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
-    //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
-  
-    if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
-        print_safe("Error al Inicializar el semaforo del lector");
-        return 1;
-    }
-    if(sem_init(&sem_escritor, 0, 0) == -1){
-        print_safe("Error al iniciar semaforo de escritores");
-        return 1;
-    }
-    //----------------------------------------------------------
-    //              creacion lectores y escritores
-    //----------------------------------------------------------
-
-    int i = 0;
-    while(i < NUM_LECTORES){ 
-        lectores.emplace_back(Lector, i + 1);
-        ++i;
-    }
-    int ii= 0;
-   /* while(i< NUM_ESCRITORES){
-        escritores.emplace_back(Escritor, ii +1);
-        ++ii;
-    }*/
-    int count = NUM_ESCRITORES;
-    while(count > 0){
-        escritores.emplace_back(Escritor, count);
-        count --;
-    }
-
-    // Esperar a que terminen
-    for(auto& t : lectores){
-        t.join();
-    }
-    for(auto& t : escritores){
-        t.join();
-    }
-
-    // Liberar recursos
-    sem_destroy(&sem_lector);
-    sem_destroy(&sem_escritor);
-
-    return 0;
+     // creacion de los hilos
+     vector<thread> lectores;
+     vector<thread> escritores;
+     // Inicializar semáforos
+     //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
+     //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
+     //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
+   
+     if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
+         print_safe("Error al Inicializar el semaforo del lector");
+         return 1;
+     }
+     if(sem_init(&sem_escritor, 0, 0) == -1){
+         print_safe("Error al iniciar semaforo de escritores");
+         return 1;
+     }
+     //----------------------------------------------------------
+     //              creacion lectores y escritores
+     //----------------------------------------------------------
+ 
+     int i = 0;
+     while(i < NUM_LECTORES){ 
+         lectores.emplace_back(Lector, i + 1);
+         ++i;
+     }
+     int ii= 0;
+    /* while(i< NUM_ESCRITORES){
+         escritores.emplace_back(Escritor, ii +1);
+         ++ii;
+     }*/
+     int count = NUM_ESCRITORES;
+     while(count > 0){
+         escritores.emplace_back(Escritor, count);
+         count --;
+     }
+ 
+     // Esperar a que terminen
+     for(auto& t : lectores){
+         t.join();
+     }
+     for(auto& t : escritores){
+         t.join();
+     }
+ 
+     // Liberar recursos
+     sem_destroy(&sem_lector);
+     sem_destroy(&sem_escritor);
+ 
+     return 0;
 }
