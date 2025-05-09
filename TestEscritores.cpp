@@ -37,7 +37,7 @@ void Lector(int id) {
     uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
 
     while (true) { // aqui va toda la sintaxis 0w0
-    print_safe("[Lector " + to_string(id) + "] intentando acceder.");
+        print_safe("[Lector " + to_string(id) + "] intentando acceder.");
 
         unique_lock<mutex> lock(mutex_control);
         if(!escritor_esperando && lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS && lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
@@ -98,6 +98,7 @@ void Escritor(int id) {
     for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
         sem_post(&sem_lector);
     }
+    //sem_post(&sem_escritor);
     lock.unlock();
 }
 
@@ -114,7 +115,7 @@ int main() {
         print_safe("Error al Inicializar el semaforo del lector");
         return 1;
     }
-    if(sem_init(&sem_escritor, 0, 1) == -1){
+    if(sem_init(&sem_escritor, 0, 0) == -1){
         print_safe("Error al iniciar semaforo de escritores");
         return 1;
     }
