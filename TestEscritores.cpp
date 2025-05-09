@@ -19,10 +19,17 @@ using namespace std;
 // Variables compartidas
 int lecturas_consecutivas = 0;
 mutex mutex_control;
+mutex cout_mutex; 
 sem_t sem_lector;
 sem_t sem_escritor;
 bool escritor_esperando = false;
 int lectores_en_sala = 0;
+
+//se creara la funcion protectora de los cout
+void print_safe(const string& messege){
+    lock_guard<mutex> lock(cout_mutex);
+    cout<<messege<<endl;
+}
 
 void Lector(int id) {
     random_device rd;
@@ -30,15 +37,15 @@ void Lector(int id) {
     uniform_int_distribution<> distribucion_tiempo(1, TIEMPO_LECTURA_MAX);
 
     while (true) { // aqui va toda la sintaxis 0w0
-        cout << "[Lector " << id << "] intentando acceder." << endl;
+    print_safe("[Lector " + to_string(id) + "] intentando acceder.");
 
         unique_lock<mutex> lock(mutex_control);
         if(!escritor_esperando && lectores_en_sala < MAX_LECTURAS_CONSECUTIVAS && lecturas_consecutivas < MAX_LECTURAS_CONSECUTIVAS) {
             
             lectores_en_sala++;
             lecturas_consecutivas++;
-            cout << "[Lector " << id << "] leyendo (lectura " << lecturas_consecutivas 
-                 << "/" << MAX_LECTURAS_CONSECUTIVAS << ")" << endl;
+            print_safe("[Lector " + to_string(id) + "] leyendo (lectura " + to_string(lecturas_consecutivas) + 
+                      "/" + to_string(MAX_LECTURAS_CONSECUTIVAS) + ")");
             lock.unlock();
 
             // Simular tiempo de lectura
@@ -52,12 +59,12 @@ void Lector(int id) {
             }
             lock.unlock();
 
-            cout << "[Lector " << id << "] terminó de leer." << endl;
+            print_safe("[Lector " + to_string(id) + "] terminó de leer.");
             break;
         } else {
-            cout << "[Lector " << id << "] esperando (escritor: " << escritor_esperando 
-                 << ", lectores: " << lectores_en_sala << ", lecturas: " 
-                 << lecturas_consecutivas << ")." << endl;
+            print_safe("[Lector " + to_string(id) + "] esperando (escritor: " + to_string(escritor_esperando) + 
+                      ", lectores: " + to_string(lectores_en_sala) + ", lecturas: " + 
+                      to_string(lecturas_consecutivas) + ").");
             lock.unlock();
             sem_wait(&sem_lector);
         }
@@ -65,26 +72,26 @@ void Lector(int id) {
 }
 
 void Escritor(int id) {
-    cout << "[Escritor " << id << "] intentando acceder." << endl;
+    print_safe("[Escritor " + to_string(id) + "] intentando acceder.");
 
     unique_lock<mutex> lock(mutex_control);
     escritor_esperando = true;
-    cout << "[Escritor " << id << "] esperando turno tras " 
-         << lecturas_consecutivas << " lecturas." << endl;
+    print_safe("[Escritor " + to_string(id) + "] esperando turno tras " + 
+               to_string(lecturas_consecutivas) + " lecturas.");
     lock.unlock();
 
     sem_wait(&sem_escritor);
 
     lock.lock();
     escritor_esperando = false;
-    cout << "[Escritor " << id << "] escribiendo..." << endl;
+    print_safe("[Escritor " + to_string(id) + "] escribiendo...");
     lock.unlock();
 
     // Simulacion del tiempo de escritura
     this_thread::sleep_for(chrono::seconds(TIEMPO_ESCRITURA));
 
     lock.lock();
-    cout << "[Escritor " << id << "] terminó de escribir." << endl;
+    print_safe("[Escritor " + to_string(id) + "] terminó de escribir.");
     lecturas_consecutivas = 0;
     
     // Notificar a los lectores
@@ -104,11 +111,11 @@ int main() {
     //sus hilos a compartir al inicio y el tope max, que es la var gen de max lect
   
     if(sem_init(&sem_lector, 0, MAX_LECTURAS_CONSECUTIVAS) == -1){
-        cerr << "Error al Inicializar el semaforo del lector" << endl;
+        print_safe("Error al Inicializar el semaforo del lector");
         return 1;
     }
     if(sem_init(&sem_escritor, 0, 0) == -1){
-        cerr << "Error al iniciar semaforo de escritores" << endl;
+        print_safe("Error al iniciar semaforo de escritores");
         return 1;
     }
     //----------------------------------------------------------
@@ -148,6 +155,7 @@ int main() {
 
 
 // */#include <stdio.h>
+/*
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -268,3 +276,4 @@ int main() {
     printf("Todos los hilos han terminado.\n");
     return 0;
 }/
+*/
