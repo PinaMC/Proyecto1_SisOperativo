@@ -1,5 +1,7 @@
-#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
 #include <unistd.h>
 
 /** Funciones de hilos
@@ -22,8 +24,10 @@
 //Falta agregar semaforos y mutexes
 
 #define MAX_LECTURAS_CONSECUTIVAS 5
+#define MAX_LECTURAS 4
 #define N_LECTORES 4
 #define N_ESCRITORES 2
+
 
 // Variables compartidas
 int lectores_activos = 0;
@@ -31,6 +35,9 @@ int lectores_esperando = 0;
 int escritores_activos = 0;
 int escritores_esperando = 0;
 int lecturas_consecutivas = 0;
+int ciclos_completados = 0;
+bool terminar = false;
+
 
 // Sincronización
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -38,13 +45,16 @@ pthread_cond_t cond_lectores = PTHREAD_COND_INITIALIZER;
 pthread_cond_t cond_escritores = PTHREAD_COND_INITIALIZER;
 
 // Funciones de lectura/escritura simuladas
-void leer(int id) {
+void leer(int id) { //sirve para simular y ver que el lector lee
+    printf("[Lector %d] intentando acceder.\n", id);
     printf("[Lector %d] leyendo (lectura %d/%d)\n", id, lecturas_consecutivas, MAX_LECTURAS_CONSECUTIVAS);
     sleep(1);
 }
 
-void escribir(int id) {
+void escribir(int id) { //sirve para simular y ver que el escritor escribe
+    printf("[Escritor %d] intentando acceder para escribir.\n", id);
     printf("[Escritor %d] escribiendo...\n", id);
+    
     sleep(2);
 }
 
@@ -52,7 +62,7 @@ void escribir(int id) {
 void* lector(void* arg) {
     int id = *(int*)arg;
     while (1) {
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&mutex);//bloquea el mutex
 
         lectores_esperando++;
 
@@ -151,5 +161,4 @@ int main() {
 
     return 0;
 }
-
 
