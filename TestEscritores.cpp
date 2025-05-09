@@ -12,7 +12,7 @@ using namespace std;
 // Constantes de configuración
 #define MAX_LECTURAS_CONSECUTIVAS 5
 #define TIEMPO_ESCRITURA 2
-#define TIEMPO_LECTURA_MAX 3
+#define TIEMPO_LECTURA_MAX 5
 #define NUM_LECTORES 5
 #define NUM_ESCRITORES 2
 
@@ -103,9 +103,6 @@ void Escritor(int id) {
 }
 
 int main() {
-    // creacion de los hilos
-    vector<thread> lectores;
-    vector<thread> escritores;
     // Inicializar semáforos
     //el se init tiene un puntero al semaforo, un pshared que indicaa hilos a compartir
     //y un valor inicial, por lo que primero lo señalamos a sem lector, indicamos
@@ -123,6 +120,7 @@ int main() {
     //              creacion lectores y escritores
     //----------------------------------------------------------
 
+    vector<thread> lectores;
     int i = 0;
     while(i < NUM_LECTORES){ 
         lectores.emplace_back(Lector, i + 1);
@@ -133,10 +131,20 @@ int main() {
         escritores.emplace_back(Escritor, ii +1);
         ++ii;
     }*/
+    vector<thread> escritores;
     int count = NUM_ESCRITORES;
     while(count > 0){
         escritores.emplace_back(Escritor, count);
         count --;
+    }
+    
+
+
+
+    // Liberar todos los semáforos para despertar hilos bloqueados
+    for (int i = 0; i < MAX_LECTURAS_CONSECUTIVAS; ++i) {
+        sem_post(&sem_lector);
+        sem_post(&sem_escritor);
     }
 
     // Esperar a que terminen
@@ -153,128 +161,3 @@ int main() {
 
     return 0;
 }
-
-
-// */#include <stdio.h>
-/*
-#include <stdlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <unistd.h>
-
-// --- Parámetros configurables ---
-#define N_LECTORES 3
-#define N_ESCRITORES 2
-#define MAX_LECTURAS_CONSECUTIVAS 5
-#define CICLOS_LECTOR 4
-#define CICLOS_ESCRITOR 2
-
-// --- Variables globales ---
-int lectores_activos = 0;
-int escritores_activos = 0;
-int escritores_esperando = 0;
-int lecturas_consecutivas = 0;
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-sem_t sem_lector;
-sem_t sem_escritor;
-
-// --- Funciones auxiliares ---
-void *lector(void *arg) {
-    int id = *(int *)arg;
-    for (int i = 0; i < CICLOS_LECTOR; i++) {
-        usleep(rand() % 500000); // Simula tiempo antes de intentar leer
-
-        pthread_mutex_lock(&mutex);
-        if (escritores_esperando > 0 && lecturas_consecutivas >= MAX_LECTURAS_CONSECUTIVAS) {
-            pthread_mutex_unlock(&mutex);
-            sem_wait(&sem_lector); // Se bloquea esperando turno
-        } else {
-            lectores_activos++;
-            lecturas_consecutivas++;
-            pthread_mutex_unlock(&mutex);
-        }
-
-        // Sección crítica de lectura
-        printf("[Lector %d] leyendo (lectura %d/%d)\n", id, i + 1, CICLOS_LECTOR);
-        usleep(200000); // Simula tiempo de lectura
-
-        pthread_mutex_lock(&mutex);
-        lectores_activos--;
-        if (lectores_activos == 0 && escritores_esperando > 0 && lecturas_consecutivas >= MAX_LECTURAS_CONSECUTIVAS) {
-            sem_post(&sem_escritor);
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-    pthread_exit(NULL);
-}
-
-void *escritor(void *arg) {
-    int id = *(int *)arg;
-    for (int i = 0; i < CICLOS_ESCRITOR; i++) {
-        usleep(rand() % 800000); // Simula tiempo antes de intentar escribir
-
-        pthread_mutex_lock(&mutex);
-        escritores_esperando++;
-        while (lectores_activos > 0 || escritores_activos > 0) {
-            pthread_mutex_unlock(&mutex);
-            sem_wait(&sem_escritor);
-            pthread_mutex_lock(&mutex);
-        }
-        escritores_esperando--;
-        escritores_activos++;
-        pthread_mutex_unlock(&mutex);
-
-        // Sección crítica de escritura
-        printf("[Escritor %d] escribiendo (escritura %d/%d)\n", id, i + 1, CICLOS_ESCRITOR);
-        usleep(400000); // Simula tiempo de escritura
-
-        pthread_mutex_lock(&mutex);
-        escritores_activos--;
-        lecturas_consecutivas = 0;
-
-        if (escritores_esperando > 0) {
-            sem_post(&sem_escritor);
-        } else {
-            for (int i = 0; i < N_LECTORES; i++) {
-                sem_post(&sem_lector);
-            }
-        }
-        pthread_mutex_unlock(&mutex);
-    }
-    pthread_exit(NULL);
-}
-
-// --- Main ---
-int main() {
-    pthread_t lectores[N_LECTORES], escritores[N_ESCRITORES];
-    int ids_lectores[N_LECTORES], ids_escritores[N_ESCRITORES];
-
-    sem_init(&sem_lector, 0, 0);
-    sem_init(&sem_escritor, 0, 0);
-
-    for (int i = 0; i < N_LECTORES; i++) {
-        ids_lectores[i] = i + 1;
-        pthread_create(&lectores[i], NULL, lector, &ids_lectores[i]);
-    }
-
-    for (int i = 0; i < N_ESCRITORES; i++) {
-        ids_escritores[i] = i + 1;
-        pthread_create(&escritores[i], NULL, escritor, &ids_escritores[i]);
-    }
-
-    for (int i = 0; i < N_LECTORES; i++) {
-        pthread_join(lectores[i], NULL);
-    }
-    for (int i = 0; i < N_ESCRITORES; i++) {
-        pthread_join(escritores[i], NULL);
-    }
-
-    sem_destroy(&sem_lector);
-    sem_destroy(&sem_escritor);
-    pthread_mutex_destroy(&mutex);
-
-    printf("Todos los hilos han terminado.\n");
-    return 0;
-}
-*/
